@@ -10,7 +10,7 @@ import js2py
 def request_prediction(model_uri, data):
     headers = {"Content-Type": "application/json"}
 
-    data_json = {'columns':["EXT_SOURCE_1", "EXT_SOURCE_2", "EXT_SOURCE_3","DAYS_EMPLOYED", "DAYS_BIRTH", "DAYS_ID_PUBLISH", "PAYMENT_RATE", "INSTAL_DPD_MEAN", "ANNUITY_INCOME_PERC", "BURO_DAYS_CREDIT_MEAN"], 'data': data}
+    data_json = {'columns':["EXT_SOURCE_1", "EXT_SOURCE_2", "EXT_SOURCE_3","DAYS_EMPLOYED", "DAYS_BIRTH", "DAYS_ID_PUBLISH", "PAYMENT_RATE", "ANNUITY_INCOME_PERC", "DPD_BOOL"], 'data': data}
     response = requests.request(
         method='POST', headers=headers, url=model_uri, json=data_json)
 
@@ -24,45 +24,51 @@ def request_prediction(model_uri, data):
 def main():
     MLFLOW_URI = 'http://127.0.0.1:5000/invocations'
 
-
+    st.set_page_config(layout="wide")   
     st.title('Scoring crédit')
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
     
-    EXT_SOURCE_1 = st.number_input('Données source extérieur 1',
+        EXT_SOURCE_1 = st.number_input('Données source extérieur 1',
+                                     min_value=0., value=.5, step=.1)
+                                     
+        EXT_SOURCE_2 = st.number_input('Données source extérieur 2',
+                                     min_value=0., value=.5, step=.1)
+        
+        EXT_SOURCE_3 = st.number_input('Données source extérieur 3',
                                  min_value=0., value=.5, step=.1)
+    with col2:
+        st.write('Retard sur des crédits précédents')
+        DPD_TRUE= st.checkbox('oui')
+        PAYMENT_RATE =st.slider('Taux de remboursement',
+                             min_value=1, max_value = 20, value=5, step=1)
+
+
+        ANNUITY_INCOME_PERC = st.slider('Taux d''endettement',
+                         min_value=1, max_value = 35, value=5, step=1)
+    with col3:
                                  
-    EXT_SOURCE_2 = st.number_input('Données source extérieur 2',
-                                 min_value=0., value=.5, step=.1)
+        DATE_EMPLOYED = st.date_input('Date de début d''emploi')
+                                     
+        
+        DATE_BIRTH = st.date_input('Date de naissance', min_value=datetime.strptime("01/01/1950", "%d/%m/%Y"), max_value=date.today())
+                                     
+        DATE_ID_PUBLISH = st.date_input('Date d''édition de la pièce d''identité')
+        
+        
     
-    EXT_SOURCE_3 = st.number_input('Données source extérieur 3',
-                                 min_value=0., value=.5, step=.1)
-                                 
-    DATE_EMPLOYED = st.date_input('Date de début d''emploi')
-                                 
-    
-    DATE_BIRTH = st.date_input('Date de naissance', min_value=datetime.strptime("01/01/1950", "%d/%m/%Y"), max_value=date.today())
-                                 
-    DATE_ID_PUBLISH = st.date_input('Date d''édition de la pièce d''identité')
-    
-    PAYMENT_RATE =st.slider('Taux de remboursement',
-                                 min_value=1, max_value = 20, value=5, step=1)
-    
-    INSTAL_DPD_MEAN =st.number_input('Moyenne des DPD pour les crédits précédents avec Home Credit',
-                                 min_value=0., value=.1, step=.1)
-    
-    ANNUITY_INCOME_PERC = st.slider('Taux d''endettement',
-                                 min_value=1, max_value = 35, value=5, step=1)
-    
-    BURO_DAYS_CREDIT_MEAN = st.number_input('BURO_DAYS_CREDIT_MEAN',
-                                 min_value=0., value=3.87, step=1.)
+
                                  
     today = date.today()
     DAYS_EMPLOYED = (today - DATE_EMPLOYED).days
     DAYS_BIRTH = (today - DATE_BIRTH).days
     DAYS_ID_PUBLISH = (today - DATE_ID_PUBLISH).days
+    DPD_BOOL = DPD_TRUE
     
     predict_btn = st.button('Prédire')
     if predict_btn:
-        data = [[EXT_SOURCE_1, EXT_SOURCE_2, EXT_SOURCE_3,DAYS_EMPLOYED, DAYS_BIRTH, DAYS_ID_PUBLISH, PAYMENT_RATE, INSTAL_DPD_MEAN, ANNUITY_INCOME_PERC, BURO_DAYS_CREDIT_MEAN]]
+        data = [[EXT_SOURCE_1, EXT_SOURCE_2, EXT_SOURCE_3,DAYS_EMPLOYED, DAYS_BIRTH, DAYS_ID_PUBLISH, PAYMENT_RATE, ANNUITY_INCOME_PERC, DPD_BOOL]]
         pred = None
         pred = request_prediction(MLFLOW_URI, data)[0]
 
