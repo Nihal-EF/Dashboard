@@ -19,6 +19,7 @@ if 'pred' not in st.session_state:
     st.session_state['pred'] = train_data.iloc[0]["TARGET"]
     
 def main():
+    joblib_model = joblib.load("pipeline_credit.joblib")
     MLFLOW_URI = 'http://127.0.0.1:5000/invocations'
     st.set_page_config(layout="wide")
 
@@ -43,7 +44,7 @@ def main():
         MLFLOW_URI = 'http://127.0.0.1:5000/invocations'
         st.write(type(request_prediction_analyse(data)))
         st.write(type(data_series[0]))
-        lime_results = classifier_lime.explain_instance(data_series, request_prediction_analyse, num_features=len(feats))
+        lime_results = classifier_lime.explain_instance(data_series, joblib_model.predict_proba, num_features=len(feats))
         lime_resuts_list = lime_results.as_list()
         st.write(lime_resuts_list)
     else :
@@ -95,7 +96,10 @@ def request_prediction_analyse(data):
     pred_proba_array = np.array(list(zip(1-pred_array, pred_array))).tolist()
 
     return pred_proba_array
-    
+
+def predict_joblib_lime(data):
+    joblib_model = joblib.load("pipeline_credit.joblib")
+    return int(joblib_model.predict_proba(data)[0][1]*100)
     
 
 if __name__ == '__main__':
