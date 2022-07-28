@@ -10,6 +10,7 @@ from PIL import Image
 import seaborn as sns
 from matplotlib import pyplot as plt
 import lime.lime_tabular
+import joblib
 
 test_data = pd.read_csv("test_df_dropna.csv")
 train_data = pd.read_csv("train_df_dropna.csv")
@@ -22,7 +23,7 @@ def main():
     joblib_model = joblib.load("pipeline_credit.joblib")
     MLFLOW_URI = 'http://127.0.0.1:5000/invocations'
     st.set_page_config(layout="wide")
-
+    feature_names= ["Score externe 1", "Score externe 2", "jours travaillés",  "Âge", "Date ID", "Taux de remboursement","Taux d'endettement","Retard de paiements"]
     feats = ["EXT_SOURCE_1","EXT_SOURCE_2","DAYS_EMPLOYED", "DAYS_BIRTH", "DAYS_ID_PUBLISH", "PAYMENT_RATE", "ANNUITY_INCOME_PERC", "DPD_BOOL"]
     data = st.session_state['data']
     pred = st.session_state['pred']
@@ -40,13 +41,22 @@ def main():
                                              mode='classification',
                                              class_names = target_names,
                                              categorical_features = [6],
-                                             feature_names= ["Score externe 1", "Score externe 2", "jours travaillés",  "Âge", "Date ID", "Taux de remboursement","Taux d'endettement","Retard de paiements"], discretize_continuous=True, feature_selection = 'auto')
+                                             feature_names= feature_names, discretize_continuous=True, feature_selection = 'auto')
         MLFLOW_URI = 'http://127.0.0.1:5000/invocations'
-        st.write(type(request_prediction_analyse(data)))
-        st.write(type(data_series[0]))
         lime_results = classifier_lime.explain_instance(data_series, joblib_model.predict_proba, num_features=len(feats))
         lime_resuts_list = lime_results.as_list()
-        st.write(lime_resuts_list)
+        lime_dataframe = lime_result_dataframe(lime_resuts_list)
+        feature_names= feature_names
+        fig = plt.figure(figsize=(10, 4))
+        plt.rcParams.update({'font.size': 10})
+        sns.barplot(data = lime_dataframe, x = "Feature", y = "Value")
+        #ax.set_xticklabels(labels = feature_names, rotation=80)
+        plt.xticks(rotation = 60)
+        plt.xlabel('Feature', fontsize=10)
+        plt.ylabel('Value', fontsize=10)
+        
+        st.pyplot(fig)
+            #st.write(lime_dataframe)
     else :
         subset_0 = train_data[train_data.TARGET == 0][:3000]
         subset_1 = train_data[train_data.TARGET == 1][:1000]
@@ -66,7 +76,9 @@ def main():
                 FEATURE_CLIENT = DAYS_EMPLOYED_CLIENT
             fig = plt.figure(figsize=(10, 10))
             sns.boxplot(data = df_subset, x= "TARGET", y = FEATURE, palette = ["#9ACD32", "#FF0000"])
-            plt.scatter(TARGET_CLIENT, FEATURE_CLIENT, marker='X', s=600, c = COLOR_CLIENT)
+            TARGET_CLIENT_NUM = [1 if TARGET_CLIENT == "Non solvable" else 0][0]
+            st.write(TARGET_CLIENT)
+            plt.scatter(TARGET_CLIENT_NUM, FEATURE_CLIENT, marker='X', s=600, c = COLOR_CLIENT)
             plt.rcParams.update({'font.size': 24})
             st.pyplot(fig)
         with col2 :
@@ -100,7 +112,22 @@ def request_prediction_analyse(data):
 def predict_joblib_lime(data):
     joblib_model = joblib.load("pipeline_credit.joblib")
     return int(joblib_model.predict_proba(data)[0][1]*100)
-    
+
+def lime_result_dataframe(lime_resuts_list):
+    lime_dataframe = pd.DataFrame()
+    feature_column = [lime_resuts_list[i][0] for i in range(len(lime_resuts_list))]
+    value_column = [-lime_resuts_list[i][1] for i in range(len(lime_resuts_list))]
+    feature_names= ["Score externe 1", "Score externe 2", "jours travaillés",  "Âge", "Date ID", "Taux de remboursement","Taux d'endettement","Retard de paiements"]
+    feature_column_cor = []
+    for feat in feature_column:
+        for feat_name in feature_names:
+            if feat_name in feat:
+                feature_column_cor.append(feat_name)
+    lime_dataframe.index = feature_column_cor
+    lime_dataframe["Value"] = value_column
+    lime_dataframe = lime_dataframe.reindex(feature_names, copy = False)
+    lime_dataframe["Feature"] = feature_column_cor
+    return lime_dataframe
 
 if __name__ == '__main__':
     main()
