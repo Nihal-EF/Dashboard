@@ -54,7 +54,7 @@ def main():
         plt.xticks(rotation = 60)
         plt.xlabel('Variable', fontsize=10)
         plt.ylabel('Contribution', fontsize=10)
-        
+        plt.axhline(y=0, color='r', linestyle='-', linewidth=1.5)
         st.pyplot(fig)
             #st.write(lime_dataframe)
     else :
