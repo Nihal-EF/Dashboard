@@ -3,7 +3,6 @@ import streamlit as st
 import requests
 from datetime import date
 from datetime import datetime
-from streamlit_echarts import st_echarts
 import js2py
 from PIL import Image
 
