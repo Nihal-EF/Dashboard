@@ -52,8 +52,8 @@ def main():
         sns.barplot(data = lime_dataframe, x = "Feature", y = "Value")
         #ax.set_xticklabels(labels = feature_names, rotation=80)
         plt.xticks(rotation = 60)
-        plt.xlabel('Feature', fontsize=10)
-        plt.ylabel('Value', fontsize=10)
+        plt.xlabel('Variable', fontsize=10)
+        plt.ylabel('Contribution', fontsize=10)
         
         st.pyplot(fig)
             #st.write(lime_dataframe)
@@ -67,19 +67,20 @@ def main():
         EXT_SOURCE_1_CLIENT = data[0][0]
         col1, col2 = st.columns(2)
         with col1:
-            PARAMETRE = st.selectbox('Paramètres à analyser :', ["Données source extérieur 1", "Nombres de jours travaillés"])
-            if PARAMETRE == "Données source extérieur 1" :
+            PARAMETRE = st.selectbox('Paramètres à analyser :', ["Score externe 1", "Nombres de jours travaillés"])
+            if PARAMETRE == "Score externe 1" :
                 FEATURE = "EXT_SOURCE_1"
                 FEATURE_CLIENT = EXT_SOURCE_1_CLIENT
             else :
                 FEATURE = "DAYS_EMPLOYED"
                 FEATURE_CLIENT = DAYS_EMPLOYED_CLIENT
             fig = plt.figure(figsize=(10, 10))
+            plt.rcParams.update({'font.size': 24})
             sns.boxplot(data = df_subset, x= "TARGET", y = FEATURE, palette = ["#9ACD32", "#FF0000"])
             TARGET_CLIENT_NUM = [1 if TARGET_CLIENT == "Non solvable" else 0][0]
-            st.write(TARGET_CLIENT)
             plt.scatter(TARGET_CLIENT_NUM, FEATURE_CLIENT, marker='X', s=600, c = COLOR_CLIENT)
-            plt.rcParams.update({'font.size': 24})
+            plt.ylabel(PARAMETRE)
+            plt.xlabel("")
             st.pyplot(fig)
         with col2 :
             st.markdown("***")
@@ -88,6 +89,8 @@ def main():
             fig = plt.figure(figsize=(10, 9))
             sns.scatterplot(data=df_subset, x="EXT_SOURCE_1", y="DAYS_EMPLOYED", hue = "TARGET", palette = ["#9ACD32", "#FF0000"], s = 100)
             plt.scatter(EXT_SOURCE_1_CLIENT, DAYS_EMPLOYED_CLIENT, marker='X', s=600, c = COLOR_CLIENT)
+            plt.xlabel("Score externe 1")
+            plt.ylabel("Nombres de jours travaillés")
             plt.rcParams.update({'font.size': 24})
             st.pyplot(fig)
             
@@ -104,7 +107,6 @@ def request_prediction_analyse(data):
             "Request failed with status {}, {}".format(response.status_code, response.text))
             
     pred_array = np.array([response.json()[0]/100])
-    st.write(pred_array)
     pred_proba_array = np.array(list(zip(1-pred_array, pred_array))).tolist()
 
     return pred_proba_array

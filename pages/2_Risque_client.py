@@ -43,9 +43,9 @@ def main():
         col1, col2, col3 = st.columns(3)
         with col1:
             
-            EXT_SOURCE_1 = st.number_input('Données source extérieur 1',
+            EXT_SOURCE_1 = st.number_input('Score externe 1',
                                      min_value=0., value=.5, step=.1)
-            EXT_SOURCE_2 = st.number_input('Données source extérieur 2',
+            EXT_SOURCE_2 = st.number_input('Score externe 2',
                                      min_value=0., value=.5, step=.1)
             st.write('Retard sur des crédits précédents')
             DPD_TRUE= st.checkbox('oui')
@@ -78,9 +78,9 @@ def main():
         col1, col2, col3 = st.columns(3)
         with col1:
             
-            EXT_SOURCE_1= st.number_input('Données source extérieur 1',
+            EXT_SOURCE_1= st.number_input('Score externe 1',
                                      min_value=0., value=data[0][0], step=.1)
-            EXT_SOURCE_2 = st.number_input('Données source extérieur 2',
+            EXT_SOURCE_2 = st.number_input('Score externe 2',
                                      min_value=0., value=data[0][1], step=.1)
             st.write('Retard sur des crédits précédents')
             DPD_TRUE= st.checkbox('oui', value = data[0][7])
