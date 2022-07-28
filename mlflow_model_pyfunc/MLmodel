@@ -1,0 +1,17 @@
+flavors:
+  python_function:
+    cloudpickle_version: 2.1.0
+    env: conda.yaml
+    loader_module: mlflow.pyfunc.model
+    python_model: python_model.pkl
+    python_version: 3.10.4
+mlflow_version: 1.26.1
+model_uuid: eeadf39362ce40fa9b552ae6fb700298
+signature:
+  inputs: '[{"name": "EXT_SOURCE_1", "type": "double"}, {"name": "EXT_SOURCE_2", "type":
+    "double"}, {"name": "DAYS_EMPLOYED", "type": "double"}, {"name": "DAYS_BIRTH",
+    "type": "long"}, {"name": "DAYS_ID_PUBLISH", "type": "long"}, {"name": "PAYMENT_RATE",
+    "type": "double"}, {"name": "ANNUITY_INCOME_PERC", "type": "double"}, {"name":
+    "DPD_BOOL", "type": "long"}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "int64", "shape": [-1]}}]'
+utc_time_created: '2022-07-15 11:50:56.184889'
