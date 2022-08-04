@@ -54,7 +54,7 @@ def main():
 
             DATE_EMPLOYED = st.date_input('Date de début d\'emploi')
             DATE_BIRTH = st.date_input('Date de naissance', min_value=datetime.strptime("01/01/1950", "%d/%m/%Y"), max_value=date.today())
-            DATE_ID_PUBLISH = st.date_input('Date d\'édition de la pièce d\’identité')
+            DATE_ID_PUBLISH = st.date_input('Date d\'édition de la pièce d\'identité')
         with col3 :
             PAYMENT_RATE =st.slider('Taux de remboursement',
                                  min_value=1, max_value = 20, value=5, step=1)/100
@@ -88,7 +88,7 @@ def main():
         with col2:
             DATE_EMPLOYED = st.date_input('Date de début d\'emploi', value = DATE_EMPLOYED)
             DATE_BIRTH = st.date_input('Date de naissance', min_value=datetime.strptime("01/01/1950", "%d/%m/%Y"), max_value=date.today(), value = DATE_BIRTH)
-            DATE_ID_PUBLISH = st.date_input('Date d''édition de la pièce d\’identité', value = DATE_ID_PUBLISH)
+            DATE_ID_PUBLISH = st.date_input('Date d\'édition de la pièce d\’identité', value = DATE_ID_PUBLISH)
         with col3 :
             PAYMENT_RATE =st.slider('Taux de remboursement',
                                  min_value=1, max_value = 20, value=int(data[0][5]*100), step=1)
