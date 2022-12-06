@@ -10,7 +10,10 @@ from PIL import Image
 import seaborn as sns
 from matplotlib import pyplot as plt
 import lime.lime_tabular
+import altair as alt
 import joblib
+import streamlit.components.v1 as components
+
 
 test_data = pd.read_csv("test_df_dropna.csv")
 train_data = pd.read_csv("train_df_dropna.csv")
@@ -34,8 +37,13 @@ def main():
         TARGET_CLIENT = "Solvable"
     COLOR_CLIENT = ["#64C88A" if pred < 25 else "#FDDD60" if pred < 50 else "#ffa500" if pred < 75 else "#FF403F" ][0]
 
-    ANALYSE_OPTION = st.selectbox('Choisissez une option d\'analyse :', ["Explication des résultats", "Graphiques"])
-    if (ANALYSE_OPTION == "Explication des résultats") :
+    ANALYSE_OPTION = st.selectbox('Choisissez une option d\'analyse :', ["Importance des variables", "Explication des résultats", "Graphiques"])
+    if (ANALYSE_OPTION == "Importance des variables") :
+        fold_importance_df = pd.DataFrame()
+        fold_importance_df["feature"] = feats
+        fold_importance_df["importance"] = joblib_model.named_steps['regressor'].feature_importances_
+        display_importances(fold_importance_df)
+    elif (ANALYSE_OPTION == "Explication des résultats") :
         target_names = ['credit worthy', 'credit unworthy']
         classifier_lime = lime.lime_tabular.LimeTabularExplainer(train_data[feats].values,
                                              mode='classification',
@@ -74,25 +82,33 @@ def main():
             else :
                 FEATURE = "DAYS_EMPLOYED"
                 FEATURE_CLIENT = DAYS_EMPLOYED_CLIENT
-            fig = plt.figure(figsize=(10, 10))
-            plt.rcParams.update({'font.size': 24})
+            fig = plt.figure(figsize=(4, 4))
+            plt.rcParams.update({'font.size': 10})
+            # plt.boxplot(df_subset[["TARGET", FEATURE]])
             sns.boxplot(data = df_subset, x= "TARGET", y = FEATURE, palette = ["#9ACD32", "#FF0000"])
             TARGET_CLIENT_NUM = [1 if TARGET_CLIENT == "Non solvable" else 0][0]
-            plt.scatter(TARGET_CLIENT_NUM, FEATURE_CLIENT, marker='X', s=600, c = COLOR_CLIENT)
+            plt.scatter(TARGET_CLIENT_NUM, FEATURE_CLIENT, marker='X', s=100, c = COLOR_CLIENT)
             plt.ylabel(PARAMETRE)
             plt.xlabel("")
+            #fig_html = mpld3.fig_to_html(fig)
+            #components.html(fig_html, height=600)
             st.pyplot(fig)
         with col2 :
             st.markdown("***")
             st.markdown("***")
-            sns.set_palette("bright")
-            fig = plt.figure(figsize=(10, 9))
-            sns.scatterplot(data=df_subset, x="EXT_SOURCE_1", y="DAYS_EMPLOYED", hue = "TARGET", palette = ["#9ACD32", "#FF0000"], s = 100)
-            plt.scatter(EXT_SOURCE_1_CLIENT, DAYS_EMPLOYED_CLIENT, marker='X', s=600, c = COLOR_CLIENT)
-            plt.xlabel("Score externe 1")
-            plt.ylabel("Nombres de jours travaillés")
-            plt.rcParams.update({'font.size': 24})
-            st.pyplot(fig)
+            palette = ["#9ACD32", "#FF0000"]
+            # domain = ["Score externe 1", "Nbre de jours travaillés"]
+            alt_scatter = alt.Chart(df_subset).mark_circle(size=60).encode(
+                x='EXT_SOURCE_1',
+                y='DAYS_EMPLOYED',
+                color=alt.Color('TARGET', scale=alt.Scale(range=palette)),
+                tooltip=['EXT_SOURCE_1', 'DAYS_EMPLOYED', 'TARGET']
+            ).properties(width=500, height = 300).interactive()
+            st.altair_chart(alt_scatter, use_container_width=True)
+
+            
+            
+            
             
 def request_prediction_analyse(data):
     MLFLOW_URI = 'http://127.0.0.1:5000/invocations'
@@ -114,6 +130,10 @@ def request_prediction_analyse(data):
 def predict_joblib_lime(data):
     joblib_model = joblib.load("pipeline_credit.joblib")
     return int(joblib_model.predict_proba(data)[0][1]*100)
+    
+def predict_joblib(data):
+    joblib_model = joblib.load("pipeline_credit.joblib")
+    return int(joblib_model.predict_proba(data)[0][1]*100)
 
 def lime_result_dataframe(lime_resuts_list):
     lime_dataframe = pd.DataFrame()
@@ -130,6 +150,18 @@ def lime_result_dataframe(lime_resuts_list):
     lime_dataframe = lime_dataframe.reindex(feature_names, copy = False)
     lime_dataframe["Feature"] = feature_column_cor
     return lime_dataframe
+
+def display_importances(feature_importance_df_):
+    cols = feature_importance_df_[["feature", "importance"]].groupby("feature").mean().sort_values(by="importance", ascending=False).index
+    best_features = feature_importance_df_.loc[feature_importance_df_.feature.isin(cols)]
+    fig = plt.figure(figsize=(4, 2.5))
+    plt.rcParams.update({'font.size': 5})
+    sns.barplot(x="importance", y="feature", data=best_features.sort_values(by="importance", ascending=False))
+    plt.title('Variables selon leur degré d\'impact sur les prédictions de façon globale', fontsize = 8)
+    plt.tight_layout()
+    plt.xlabel('Importance', fontsize=8)
+    plt.ylabel('Variable', fontsize=8)
+    st.pyplot(fig)
 
 if __name__ == '__main__':
     main()

@@ -21,9 +21,6 @@ def request_prediction(model_uri, data):
     
     return response.json()
 
-def predict_joblib(data):
-    joblib_model = joblib.load("pipeline_credit.joblib")
-    return int(joblib_model.predict_proba(data)[0][1]*100)
 
 if 'client_nouveau' not in st.session_state:
     st.session_state['client_nouveau'] = True
@@ -109,8 +106,8 @@ def main():
     if predict_btn:
         
         pred = None
-        #pred = request_prediction(MLFLOW_URI, data)[0]
-        pred = predict_joblib(data)
+        pred = request_prediction(MLFLOW_URI, data)[0]
+        # pred = predict_joblib(data)
 
             
             
