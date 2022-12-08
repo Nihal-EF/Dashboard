@@ -104,8 +104,13 @@ def main():
                 color=alt.Color('TARGET', scale=alt.Scale(range=palette)),
                 tooltip=['EXT_SOURCE_1', 'DAYS_EMPLOYED', 'TARGET']
             ).properties(width=500, height = 300).interactive()
-            plt.scatter(TARGET_CLIENT_NUM, FEATURE_CLIENT, marker='X', s=100, c = COLOR_CLIENT)
-            st.altair_chart(alt_scatter, use_container_width=True)
+            df_client = pd.DataFrame(columns = ['EXT_SOURCE_1', 'DAYS_EMPLOYED', 'TARGET'], data = [[EXT_SOURCE_1_CLIENT, DAYS_EMPLOYED_CLIENT, pred]])
+            alt_scatter_client = alt.Chart(df_client).mark_square(size=200).encode(
+                x='EXT_SOURCE_1',
+                y='DAYS_EMPLOYED',
+                color=alt.ColorValue(COLOR_CLIENT),
+            ).properties(width=500, height = 300)
+            st.altair_chart((alt_scatter + alt_scatter_client).interactive(), use_container_width=True)
 
             
             
