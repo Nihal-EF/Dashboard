@@ -8,10 +8,11 @@ import js2py
 from PIL import Image
 import joblib
 
+
 def request_prediction(model_uri, data):
     headers = {"Content-Type": "application/json"}
 
-    data_json = {'columns':["EXT_SOURCE_1","EXT_SOURCE_2","DAYS_EMPLOYED", "DAYS_BIRTH", "DAYS_ID_PUBLISH", "PAYMENT_RATE", "ANNUITY_INCOME_PERC", "DPD_BOOL"], 'data': data}
+    data_json = {'dataframe_split' : {'columns':["EXT_SOURCE_1","EXT_SOURCE_2","DAYS_EMPLOYED", "DAYS_BIRTH", "DAYS_ID_PUBLISH", "PAYMENT_RATE", "ANNUITY_INCOME_PERC", "DPD_BOOL"], 'data': data}}
     response = requests.request(
         method='POST', headers=headers, url=model_uri, json=data_json)
 
@@ -31,7 +32,7 @@ if 'client_existant' not in st.session_state:
     st.session_state['client_existant'] = False
     
 def main():
-    MLFLOW_URI = 'http://127.0.0.1:5000/invocations'
+    MLFLOW_URI = 'http://35.180.69.207:5000/invocations'
     st.set_page_config(layout="wide")
     test_data = pd.read_csv("test_df_dropna.csv")
     train_data = pd.read_csv("train_df_dropna.csv")
@@ -109,8 +110,8 @@ def main():
     if predict_btn:
         
         pred = None
-        # pred = request_prediction(MLFLOW_URI, data)[0]
-        pred = predict_joblib(data)
+        pred = request_prediction(MLFLOW_URI, data)['predictions'][0]
+        # pred = predict_joblib(data)
 
             
             
