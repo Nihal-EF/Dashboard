@@ -104,6 +104,7 @@ def main():
                 color=alt.Color('TARGET', scale=alt.Scale(range=palette)),
                 tooltip=['EXT_SOURCE_1', 'DAYS_EMPLOYED', 'TARGET']
             ).properties(width=500, height = 300).interactive()
+            plt.scatter(TARGET_CLIENT_NUM, FEATURE_CLIENT, marker='X', s=100, c = COLOR_CLIENT)
             st.altair_chart(alt_scatter, use_container_width=True)
 
             
